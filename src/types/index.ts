@@ -15,11 +15,6 @@ export interface FeedSource {
   language?: string;      // 소스 언어 (예: "ko", "en") — 기본 "en"
 }
 
-export interface EmailConfig {
-  to: string;             // 수신 이메일 주소
-  from?: string;          // 발신자 표시명
-}
-
 export interface AIConfig {
   provider: string;
   model?: string;         // 모델명 (기본: "llama-3.3-70b-versatile")
@@ -71,13 +66,4 @@ export interface StateData {
 export interface ProcessedEntry {
   url: string;
   processedAt: string;    // ISO 8601
-}
-
-// === 이메일 결과 ===
-
-export interface SendResult {
-  success: boolean;
-  messageId?: string;
-  error?: string;
-  attempts: number;
 }
