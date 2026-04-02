@@ -13,12 +13,13 @@ const MAX_CONTENT_PER_ARTICLE = 1200;
  * 기사 본문에서 첫 2~3문장을 발췌하여 폴백 요약을 생성한다.
  */
 export function extractFallbackSummary(content: string): string {
-  const trimmed = content.trim();
-  if (!trimmed) return "";
+  // HTML 태그 제거
+  const stripped = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!stripped) return "";
 
-  const sentences = trimmed.match(/[^.!?]*[.!?]+(?:\s|$)/g);
+  const sentences = stripped.match(/[^.!?]*[.!?]+(?:\s|$)/g);
   if (!sentences || sentences.length === 0) {
-    return trimmed.slice(0, 200).trim();
+    return stripped.slice(0, 200).trim();
   }
   return sentences.slice(0, 3).join("").trim();
 }
@@ -58,7 +59,8 @@ export class AISummarizer {
   }
 
   private async summarizeOne(article: CollectedArticle): Promise<SummarizedArticle> {
-    const content = article.content.slice(0, MAX_CONTENT_PER_ARTICLE);
+    const raw = article.content.slice(0, MAX_CONTENT_PER_ARTICLE);
+    const content = raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     const isKorean = article.language === "ko";
 
     const prompt = isKorean
