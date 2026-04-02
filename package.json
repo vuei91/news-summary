@@ -1,7 +1,7 @@
 {
-  "name": "news-email-digest",
+  "name": "news-digest",
   "version": "1.0.0",
-  "description": "뉴스 요약 이메일 다이제스트 서비스 — RSS 수집, AI 요약, 이메일 발송",
+  "description": "뉴스 요약 다이제스트 서비스 — RSS 수집, AI 요약, 디스코드 발송",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,16 +10,13 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
     "cheerio": "^1.0.0",
     "dotenv": "^17.4.0",
-    "nodemailer": "^6.9.0",
     "openai": "^6.33.0",
     "rss-parser": "^3.13.0",
     "tsx": "^4.19.0"
   },
   "devDependencies": {
-    "@types/nodemailer": "^6.4.0",
     "fast-check": "^3.22.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"

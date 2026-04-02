@@ -41,10 +41,6 @@
       "language": "ko"
     }
   ],
-  "email": {
-    "to": "wkwk2805@gmail.com",
-    "from": "News Digest"
-  },
   "ai": {
     "provider": "groq",
     "model": "llama-3.3-70b-versatile",
