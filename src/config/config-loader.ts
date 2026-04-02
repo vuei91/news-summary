@@ -53,16 +53,6 @@ export function validate(config: unknown): DigestConfig {
     });
   }
 
-  // email 검증
-  if (cfg.email === null || typeof cfg.email !== "object") {
-    errors.push("email 필드가 객체여야 합니다");
-  } else {
-    const email = cfg.email as Record<string, unknown>;
-    if (!email.to || typeof email.to !== "string" || email.to.trim() === "") {
-      errors.push("email.to 필드가 필요합니다 (비어있지 않은 문자열)");
-    }
-  }
-
   // ai 검증 — provider 제한 없음 (groq, gemini 등)
   if (cfg.ai !== undefined) {
     if (cfg.ai === null || typeof cfg.ai !== "object") {
@@ -79,7 +69,6 @@ export function validate(config: unknown): DigestConfig {
 
   return {
     sources: cfg.sources as FeedSource[],
-    email: cfg.email as DigestConfig["email"],
     ai: {
       provider: (aiConfig?.provider as string) ?? "groq",
       model: (aiConfig?.model as string) ?? "llama-3.3-70b-versatile",

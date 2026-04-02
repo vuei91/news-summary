@@ -2,7 +2,6 @@
 
 export interface DigestConfig {
   sources: FeedSource[];
-  email: EmailConfig;
   ai: AIConfig;
   schedule?: string; // cron 표현식 (참고용)
   maxArticlesPerSource?: number; // 소스당 최대 기사 수
