@@ -39,6 +39,11 @@
       "feedUrl": "https://www.imaeil.com/rss",
       "category": "general",
       "language": "ko"
+    },
+    {
+      "name": "백악관",
+      "feedUrl": "https://www.whitehouse.gov/presidential-actions/feed/",
+      "category": "politics"
     }
   ],
   "ai": {
