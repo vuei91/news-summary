@@ -53,14 +53,7 @@ export class AISummarizer {
       await new Promise((r) => setTimeout(r, i * 2000));
 
       const result = await this.summarizeOne(article);
-
-      // 완료 즉시 로그 출력
       completed++;
-      const tag = result.isFallback ? "폴백" : "AI";
-      console.log(`  [${tag}] (${completed}/${total}) 원제: ${result.title}`);
-      console.log(`  [${tag}] 번역: ${result.translatedTitle}`);
-      console.log(`  [${tag}] 요약: ${result.summary}`);
-      console.log();
 
       return result;
     });
