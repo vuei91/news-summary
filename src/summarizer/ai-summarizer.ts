@@ -43,28 +43,18 @@ export class AISummarizer {
   async summarizeBatch(articles: CollectedArticle[]): Promise<SummarizedArticle[]> {
     if (articles.length === 0) return [];
 
-    console.log(`  [AI] 총 ${articles.length}건을 병렬로 요청합니다.`);
+    console.log(`  [AI] 총 ${articles.length}건 요약 요청`);
 
     let completed = 0;
-    const total = articles.length;
 
     const promises = articles.map(async (article, i) => {
-      // rate limit 방지: 요청 간 2초 간격
       await new Promise((r) => setTimeout(r, i * 2000));
-
       const result = await this.summarizeOne(article);
       completed++;
-
       return result;
     });
 
-    const results = await Promise.all(promises);
-
-    const success = results.filter((r) => !r.isFallback).length;
-    const fallback = results.filter((r) => r.isFallback).length;
-    console.log(`  [AI] 전체 요약 완료 — 성공: ${success}, 폴백: ${fallback}`);
-
-    return results;
+    return await Promise.all(promises);
   }
 
   private async summarizeOne(article: CollectedArticle): Promise<SummarizedArticle> {
@@ -125,11 +115,9 @@ Respond ONLY with a JSON object (no markdown, no explanation):
       } catch (error: unknown) {
         const status = (error as { status?: number }).status;
         if (status === 429 && attempt < maxRetries) {
-          // 에러 메시지에서 대기 시간 추출, 없으면 기본 10초
           const msg = error instanceof Error ? error.message : "";
           const waitMatch = msg.match(/(\d+\.?\d*)\s*s/);
           const waitSec = waitMatch ? Math.ceil(parseFloat(waitMatch[1])) + 1 : 10;
-          console.log(`  [AI] Rate limit — ${waitSec}초 대기 후 재시도 (${attempt}/${maxRetries})...`);
           await new Promise((r) => setTimeout(r, waitSec * 1000));
           continue;
         }
