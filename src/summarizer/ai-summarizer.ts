@@ -79,7 +79,7 @@ export class AISummarizer {
     const isKorean = article.language === "ko";
 
     const prompt = isKorean
-      ? `당신은 전문 뉴스 편집자입니다.
+      ? `당신은 전문 뉴스 편집자입니다. 반드시 한국어(한글)로만 작성하세요.
 
 제목: ${article.title}
 본문: ${content}
@@ -88,18 +88,18 @@ export class AISummarizer {
 
 JSON 객체만 반환하세요 (마크다운, 설명 없이):
 {"summary":"한국어 요약","translatedTitle":"${article.title}","englishSummary":"한국어 요약"}`
-      : `You are a professional Korean translator and news editor.
+      : `You are a professional news translator. Translate into Korean (한국어, Hangul script only). NEVER use Chinese characters (漢字/한자) or Japanese. Use only Hangul (가나다) and standard Korean.
 
 Title: ${article.title}
 Content: ${content}
 
 Do the following:
 1. Summarize the article in 2-3 sentences in English.
-2. Translate your English summary into natural Korean.
-3. Translate the article title into natural Korean.
+2. Translate your English summary into natural Korean (한국어/Hangul only).
+3. Translate the article title into natural Korean (한국어/Hangul only).
 
 Respond ONLY with a JSON object (no markdown, no explanation):
-{"englishSummary":"...","summary":"Korean translation of summary","translatedTitle":"Korean translation of title"}`;
+{"englishSummary":"...","summary":"Korean translation","translatedTitle":"Korean translation"}`;
 
     try {
       const completion = await this.requestWithRetry(prompt);
@@ -163,13 +163,43 @@ Respond ONLY with a JSON object (no markdown, no explanation):
       cleaned = objMatch[0];
     }
 
-    const parsed = JSON.parse(cleaned);
+    try {
+      const parsed = JSON.parse(cleaned);
+      return {
+        englishSummary: String(parsed.englishSummary ?? ""),
+        summary: String(parsed.summary ?? ""),
+        translatedTitle: String(parsed.translatedTitle ?? ""),
+      };
+    } catch {
+      // JSON 파싱 실패 시 값 안의 이스케이프 안 된 따옴표를 수정 후 재시도
+      const fixed = cleaned
+        .replace(/([{,]\s*"(?:englishSummary|summary|translatedTitle)"\s*:\s*")([\s\S]*?)("(?:\s*[,}]))/g,
+          (_match, prefix, value, suffix) => {
+            const escaped = value.replace(/(?<!\\)"/g, '\\"');
+            return prefix + escaped + suffix;
+          });
 
-    return {
-      englishSummary: String(parsed.englishSummary ?? ""),
-      summary: String(parsed.summary ?? ""),
-      translatedTitle: String(parsed.translatedTitle ?? ""),
-    };
+      try {
+        const parsed = JSON.parse(fixed);
+        return {
+          englishSummary: String(parsed.englishSummary ?? ""),
+          summary: String(parsed.summary ?? ""),
+          translatedTitle: String(parsed.translatedTitle ?? ""),
+        };
+      } catch {
+        // 정규식으로 직접 추출
+        const extract = (key: string): string => {
+          const re = new RegExp(`"${key}"\\s*:\\s*"([\\s\\S]*?)(?:"\\s*[,}])`);
+          const m = cleaned.match(re);
+          return m ? m[1].replace(/\\"/g, '"') : "";
+        };
+        return {
+          englishSummary: extract("englishSummary"),
+          summary: extract("summary"),
+          translatedTitle: extract("translatedTitle"),
+        };
+      }
+    }
   }
 
   private fallback(article: CollectedArticle): SummarizedArticle {

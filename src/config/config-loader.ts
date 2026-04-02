@@ -4,10 +4,7 @@ import type { DigestConfig, FeedSource } from "../types/index.js";
 
 export interface EnvConfig {
   aiApiKey?: string;
-  smtpHost: string;
-  smtpPort: number;
-  smtpUser: string;
-  smtpPass: string;
+  discordWebhookUrl?: string;
 }
 
 /**
@@ -120,34 +117,11 @@ function validateSource(
  * 필수 환경변수가 없으면 에러를 throw한다.
  */
 export function loadEnvConfig(): EnvConfig {
-  const errors: string[] = [];
-
-  const geminiApiKey = process.env.OPENAI_API_KEY ?? process.env.GEMINI_API_KEY ?? process.env.GROQ_API_KEY ?? process.env.AI_API_KEY;
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPort = process.env.SMTP_PORT;
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-
-  // AI API 키는 Ollama(로컬) 사용 시 불필요하므로 선택적으로 검증
-  if (!smtpHost) errors.push("SMTP_HOST 환경변수가 설정되지 않았습니다");
-  if (!smtpPort) errors.push("SMTP_PORT 환경변수가 설정되지 않았습니다");
-  if (!smtpUser) errors.push("SMTP_USER 환경변수가 설정되지 않았습니다");
-  if (!smtpPass) errors.push("SMTP_PASS 환경변수가 설정되지 않았습니다");
-
-  if (errors.length > 0) {
-    throw new Error(`환경변수 검증 실패:\n- ${errors.join("\n- ")}`);
-  }
-
-  const port = parseInt(smtpPort!, 10);
-  if (isNaN(port)) {
-    throw new Error("SMTP_PORT 환경변수가 유효한 숫자가 아닙니다");
-  }
+  const aiApiKey = process.env.OPENAI_API_KEY ?? process.env.GEMINI_API_KEY ?? process.env.GROQ_API_KEY ?? process.env.AI_API_KEY;
+  const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
   return {
-    aiApiKey: geminiApiKey,
-    smtpHost: smtpHost!,
-    smtpPort: port,
-    smtpUser: smtpUser!,
-    smtpPass: smtpPass!,
+    aiApiKey,
+    discordWebhookUrl,
   };
 }
