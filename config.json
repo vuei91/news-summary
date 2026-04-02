@@ -1,0 +1,54 @@
+{
+  "sources": [
+    {
+      "name": "Fox News - World",
+      "feedUrl": "https://moxie.foxnews.com/google-publisher/world.xml",
+      "category": "world"
+    },
+    {
+      "name": "Fox News - Politics",
+      "feedUrl": "https://moxie.foxnews.com/google-publisher/politics.xml",
+      "category": "politics"
+    },
+    {
+      "name": "한미일보",
+      "feedUrl": "https://www.hanmiilbo.kr/rss_view.php",
+      "category": "general",
+      "language": "ko"
+    },
+    {
+      "name": "한미일보 - 정치",
+      "feedUrl": "https://www.hanmiilbo.kr/rss_view.php?code=m247tk9",
+      "category": "politics",
+      "language": "ko"
+    },
+    {
+      "name": "파이낸스투데이",
+      "feedUrl": "https://www.fntoday.co.kr/rss/clickTop.xml",
+      "category": "popular",
+      "language": "ko"
+    },
+    {
+      "name": "파이낸스투데이 - 일반",
+      "feedUrl": "https://www.fntoday.co.kr/rss/S1N9.xml",
+      "category": "general",
+      "language": "ko"
+    },
+    {
+      "name": "매일신문",
+      "feedUrl": "https://www.imaeil.com/rss",
+      "category": "general",
+      "language": "ko"
+    }
+  ],
+  "email": {
+    "to": "wkwk2805@gmail.com",
+    "from": "News Digest"
+  },
+  "ai": {
+    "provider": "groq",
+    "model": "llama-3.3-70b-versatile",
+    "language": "ko"
+  },
+  "maxArticlesPerSource": 5
+}

@@ -1,0 +1,33 @@
+{
+  "sources": [
+    {
+      "name": "Fox News - Latest",
+      "feedUrl": "https://moxie.foxnews.com/google-publisher/latest.xml",
+      "category": "general"
+    },
+    {
+      "name": "Fox News - World",
+      "feedUrl": "https://moxie.foxnews.com/google-publisher/world.xml",
+      "category": "world"
+    },
+    {
+      "name": "Fox News - Politics",
+      "feedUrl": "https://moxie.foxnews.com/google-publisher/politics.xml",
+      "category": "politics"
+    },
+    {
+      "name": "Fox News - Tech",
+      "feedUrl": "https://moxie.foxnews.com/google-publisher/tech.xml",
+      "category": "tech"
+    }
+  ],
+  "email": {
+    "to": "your-email@example.com",
+    "from": "News Digest"
+  },
+  "ai": {
+    "provider": "groq",
+    "model": "llama-3.3-70b-versatile",
+    "language": "ko"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Prisma Format",
+  "version": "1.0.0",
+  "description": "Prisma 스키마 파일 수정 시 포맷팅과 검증을 수행한다",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["*.prisma"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "prisma/schema.prisma 파일이 수정되었다. `npx prisma format`을 실행하고, 스키마에 문제가 있으면 수정하라."
+  }
+}

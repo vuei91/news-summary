@@ -1,0 +1,13 @@
+{
+  "name": "Lint on Save",
+  "version": "1.0.0",
+  "description": "TypeScript 파일 저장 시 린트를 실행하고 에러를 수정한다",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["*.ts", "*.tsx"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "방금 수정된 파일에 대해 getDiagnostics를 실행하고, 타입 에러나 린트 에러가 있으면 수정하라."
+  }
+}
