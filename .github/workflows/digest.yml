@@ -2,8 +2,8 @@ name: News Digest
 
 on:
   schedule:
-    # 매일 아침 9시 KST (UTC 0시)
-    - cron: '0 0 * * *'
+    # 매일 새벽 4시 KST (UTC 0시)
+    - cron: '0 19 * * *'
   workflow_dispatch: # 수동 실행 허용
 
 jobs:
