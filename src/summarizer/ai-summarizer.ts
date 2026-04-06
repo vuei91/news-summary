@@ -73,18 +73,24 @@ export class AISummarizer {
 
 JSON 객체만 반환하세요 (마크다운, 설명 없이):
 {"summary":"한국어 요약","translatedTitle":"${article.title}","englishSummary":"한국어 요약"}`
-      : `You are a professional news translator. Translate into Korean (한국어, Hangul script only). NEVER use Chinese characters (漢字/한자) or Japanese. Use only Hangul (가나다) and standard Korean.
+      : `You are a Korean news translator. Your output language is Korean written EXCLUSIVELY in Hangul (한글).
+
+STRICT RULES:
+- Use ONLY Hangul (가-힣), Arabic numerals (0-9), basic Latin letters for proper nouns, and standard punctuation.
+- ABSOLUTELY FORBIDDEN characters: Chinese/CJK (漢字), Japanese (カタカナ/ひらがな), Thai, Arabic, Cyrillic, or ANY non-Korean script.
+- Transliterate all foreign names into Hangul (e.g., "South Carolina" → "사우스캐롤라이나", "Don Staley" → "돈 스테일리", "UConn" → "유콘").
+- Write natural, fluent Korean sentences a native speaker would use.
 
 Title: ${article.title}
 Content: ${content}
 
-Do the following:
+Tasks:
 1. Summarize the article in 2-3 sentences in English.
-2. Translate your English summary into natural Korean (한국어/Hangul only).
-3. Translate the article title into natural Korean (한국어/Hangul only).
+2. Translate the English summary into Korean using ONLY Hangul.
+3. Translate the article title into Korean using ONLY Hangul.
 
-Respond ONLY with a JSON object (no markdown, no explanation):
-{"englishSummary":"...","summary":"Korean translation","translatedTitle":"Korean translation"}`;
+Respond with a JSON object ONLY (no markdown, no explanation):
+{"englishSummary":"English summary here","summary":"한글로만 작성된 요약","translatedTitle":"한글로만 작성된 제목"}`;
 
     try {
       const completion = await this.requestWithRetry(prompt);
@@ -129,6 +135,17 @@ Respond ONLY with a JSON object (no markdown, no explanation):
     throw new Error("최대 재시도 횟수 초과");
   }
 
+  /**
+   * 한글 번역 결과에서 CJK(중국어/일본어), 태국어 등 비한글 문자를 제거한다.
+   * 허용: 한글(가-힣), 숫자, 기본 라틴 문자, 공백, 일반 구두점
+   */
+  private sanitizeKorean(text: string): string {
+    // 일본어 가타카나/히라가나, CJK 통합 한자, 태국어, 아랍어, 키릴 문자 제거
+    return text.replace(/[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uF900-\uFAFF\u0E00-\u0E7F\u0600-\u06FF\u0400-\u04FF]/g, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+
   private parseResponse(text: string): {
     englishSummary: string;
     summary: string;
@@ -150,8 +167,8 @@ Respond ONLY with a JSON object (no markdown, no explanation):
       const parsed = JSON.parse(cleaned);
       return {
         englishSummary: String(parsed.englishSummary ?? ""),
-        summary: String(parsed.summary ?? ""),
-        translatedTitle: String(parsed.translatedTitle ?? ""),
+        summary: this.sanitizeKorean(String(parsed.summary ?? "")),
+        translatedTitle: this.sanitizeKorean(String(parsed.translatedTitle ?? "")),
       };
     } catch {
       // JSON 파싱 실패 시 값 안의 이스케이프 안 된 따옴표를 수정 후 재시도
@@ -166,8 +183,8 @@ Respond ONLY with a JSON object (no markdown, no explanation):
         const parsed = JSON.parse(fixed);
         return {
           englishSummary: String(parsed.englishSummary ?? ""),
-          summary: String(parsed.summary ?? ""),
-          translatedTitle: String(parsed.translatedTitle ?? ""),
+          summary: this.sanitizeKorean(String(parsed.summary ?? "")),
+          translatedTitle: this.sanitizeKorean(String(parsed.translatedTitle ?? "")),
         };
       } catch {
         // 정규식으로 직접 추출
@@ -178,8 +195,8 @@ Respond ONLY with a JSON object (no markdown, no explanation):
         };
         return {
           englishSummary: extract("englishSummary"),
-          summary: extract("summary"),
-          translatedTitle: extract("translatedTitle"),
+          summary: this.sanitizeKorean(extract("summary")),
+          translatedTitle: this.sanitizeKorean(extract("translatedTitle")),
         };
       }
     }
