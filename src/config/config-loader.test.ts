@@ -4,7 +4,11 @@ import { loadConfig, validate, loadEnvConfig } from "./config-loader.js";
 
 const VALID_CONFIG = {
   sources: [
-    { name: "Test Source", feedUrl: "https://example.com/rss", category: "tech" },
+    {
+      name: "Test Source",
+      feedUrl: "https://example.com/rss",
+      category: "tech",
+    },
   ],
   ai: { provider: "groq", language: "ko" },
 };
@@ -13,7 +17,11 @@ const TMP_PATH = "test-config-tmp.json";
 
 describe("loadConfig", () => {
   afterEach(() => {
-    try { unlinkSync(TMP_PATH); } catch { /* ignore */ }
+    try {
+      unlinkSync(TMP_PATH);
+    } catch {
+      /* ignore */
+    }
   });
 
   it("유효한 JSON 파일에서 DigestConfig를 로드한다", () => {
@@ -25,7 +33,9 @@ describe("loadConfig", () => {
   });
 
   it("파일이 없으면 에러를 throw한다", () => {
-    expect(() => loadConfig("nonexistent.json")).toThrow("설정 파일을 찾을 수 없습니다");
+    expect(() => loadConfig("nonexistent.json")).toThrow(
+      "설정 파일을 찾을 수 없습니다",
+    );
   });
 
   it("유효하지 않은 JSON이면 에러를 throw한다", () => {
@@ -37,7 +47,7 @@ describe("loadConfig", () => {
     const config = { ...VALID_CONFIG, ai: { provider: "groq" } };
     writeFileSync(TMP_PATH, JSON.stringify(config));
     const result = loadConfig(TMP_PATH);
-    expect(result.ai.model).toBe("llama-3.3-70b-versatile");
+    expect(result.ai.model).toBe("meta-llama/llama-4-scout-17b-16e-instruct");
     expect(result.ai.language).toBe("ko");
   });
 });
@@ -53,26 +63,43 @@ describe("validate", () => {
   });
 
   it("sources가 빈 배열이면 에러를 throw한다", () => {
-    expect(() => validate({ ...VALID_CONFIG, sources: [] })).toThrow("최소 1개의 소스가 필요합니다");
+    expect(() => validate({ ...VALID_CONFIG, sources: [] })).toThrow(
+      "최소 1개의 소스가 필요합니다",
+    );
   });
 
   it("sources가 배열이 아니면 에러를 throw한다", () => {
-    expect(() => validate({ ...VALID_CONFIG, sources: "not array" })).toThrow("sources 필드가 배열이어야 합니다");
+    expect(() => validate({ ...VALID_CONFIG, sources: "not array" })).toThrow(
+      "sources 필드가 배열이어야 합니다",
+    );
   });
 
   it("소스에 name이 없으면 에러를 throw한다", () => {
-    const config = { ...VALID_CONFIG, sources: [{ feedUrl: "url", category: "tech" }] };
+    const config = {
+      ...VALID_CONFIG,
+      sources: [{ feedUrl: "url", category: "tech" }],
+    };
     expect(() => validate(config)).toThrow("sources[0].name 필드가 필요합니다");
   });
 
   it("소스에 feedUrl이 없으면 에러를 throw한다", () => {
-    const config = { ...VALID_CONFIG, sources: [{ name: "Test", category: "tech" }] };
-    expect(() => validate(config)).toThrow("sources[0].feedUrl 필드가 필요합니다");
+    const config = {
+      ...VALID_CONFIG,
+      sources: [{ name: "Test", category: "tech" }],
+    };
+    expect(() => validate(config)).toThrow(
+      "sources[0].feedUrl 필드가 필요합니다",
+    );
   });
 
   it("소스에 category가 없으면 에러를 throw한다", () => {
-    const config = { ...VALID_CONFIG, sources: [{ name: "Test", feedUrl: "url" }] };
-    expect(() => validate(config)).toThrow("sources[0].category 필드가 필요합니다");
+    const config = {
+      ...VALID_CONFIG,
+      sources: [{ name: "Test", feedUrl: "url" }],
+    };
+    expect(() => validate(config)).toThrow(
+      "sources[0].category 필드가 필요합니다",
+    );
   });
 
   it("schedule 필드가 있으면 포함한다", () => {
@@ -102,7 +129,9 @@ describe("loadEnvConfig", () => {
   it("DISCORD_WEBHOOK_URL이 있으면 반환한다", () => {
     vi.stubEnv("DISCORD_WEBHOOK_URL", "https://discord.com/api/webhooks/test");
     const result = loadEnvConfig();
-    expect(result.discordWebhookUrl).toBe("https://discord.com/api/webhooks/test");
+    expect(result.discordWebhookUrl).toBe(
+      "https://discord.com/api/webhooks/test",
+    );
   });
 
   it("환경변수가 없어도 에러 없이 반환한다", () => {

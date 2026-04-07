@@ -71,11 +71,15 @@ export function validate(config: unknown): DigestConfig {
     sources: cfg.sources as FeedSource[],
     ai: {
       provider: (aiConfig?.provider as string) ?? "groq",
-      model: (aiConfig?.model as string) ?? "llama-3.3-70b-versatile",
+      model:
+        (aiConfig?.model as string) ??
+        "meta-llama/llama-4-scout-17b-16e-instruct",
       language: (aiConfig?.language as string) ?? "ko",
     },
     ...(cfg.schedule !== undefined ? { schedule: cfg.schedule as string } : {}),
-    ...(cfg.maxArticlesPerSource !== undefined ? { maxArticlesPerSource: cfg.maxArticlesPerSource as number } : {}),
+    ...(cfg.maxArticlesPerSource !== undefined
+      ? { maxArticlesPerSource: cfg.maxArticlesPerSource as number }
+      : {}),
   };
 }
 
@@ -106,7 +110,7 @@ function validateSource(
  * 필수 환경변수가 없으면 에러를 throw한다.
  */
 export function loadEnvConfig(): EnvConfig {
-  const aiApiKey = process.env.OPENAI_API_KEY ?? process.env.GEMINI_API_KEY ?? process.env.GROQ_API_KEY ?? process.env.AI_API_KEY;
+  const aiApiKey = process.env.GROQ_API_KEY ?? process.env.AI_API_KEY;
   const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
   return {

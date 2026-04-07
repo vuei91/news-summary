@@ -27,7 +27,10 @@ async function main(): Promise<void> {
 
   // 3. RSS 수집
   const collector = new RSSCollector(stateStore);
-  const articles = await collector.collectAll(config.sources, config.maxArticlesPerSource);
+  const articles = await collector.collectAll(
+    config.sources,
+    config.maxArticlesPerSource,
+  );
   console.log(`[Digest] 수집된 기사: ${articles.length}건`);
 
   // 4. 새 기사가 없으면 종료
@@ -57,8 +60,11 @@ async function main(): Promise<void> {
 
   // 5. AI 요약
   const summarizer = new AISummarizer(envConfig.aiApiKey, config.ai.model);
-  console.log(`[Digest] AI 요약 시작 — 모델: ${config.ai.model}, ${articles.length}건...`);
-  const summarized: SummarizedArticle[] = await summarizer.summarizeBatch(articles);
+  console.log(
+    `[Digest] AI 요약 시작 — 모델: ${config.ai.model}, ${articles.length}건...`,
+  );
+  const summarized: SummarizedArticle[] =
+    await summarizer.summarizeBatch(articles);
 
   // 6. DigestStats 집계
   const stats: DigestStats = {
@@ -85,9 +91,12 @@ async function main(): Promise<void> {
     console.log(`[Digest] --dry-run 모드: 발송을 건너뜁니다.`);
   } else {
     // 9. 디스코드 발송
-    const webhookUrl = process.env.DISCORD_WEBHOOK_URL ?? envConfig.discordWebhookUrl;
+    const webhookUrl =
+      process.env.DISCORD_WEBHOOK_URL ?? envConfig.discordWebhookUrl;
     if (!webhookUrl) {
-      console.error(`[Digest] DISCORD_WEBHOOK_URL 환경변수가 설정되지 않았습니다.`);
+      console.error(
+        `[Digest] DISCORD_WEBHOOK_URL 환경변수가 설정되지 않았습니다.`,
+      );
       process.exit(1);
     }
 
@@ -116,6 +125,9 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  console.error(`[Digest] 치명적 오류:`, error instanceof Error ? error.message : error);
+  console.error(
+    `[Digest] 치명적 오류:`,
+    error instanceof Error ? error.message : error,
+  );
   process.exit(1);
 });
