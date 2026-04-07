@@ -142,6 +142,7 @@ Respond with a JSON object ONLY (no markdown, no explanation):
           model: this.modelName,
           messages: [{ role: "user", content: prompt }],
           temperature: 0.3,
+          max_tokens: 512,
         });
       } catch (error: unknown) {
         const status = (error as { status?: number }).status;
@@ -191,10 +192,16 @@ Respond with a JSON object ONLY (no markdown, no explanation):
     const objMatch = cleaned.match(/\{[\s\S]*\}/);
     if (objMatch) {
       cleaned = objMatch[0];
+    } else {
+      // 잘린 JSON 복구: { 로 시작하지만 } 가 없는 경우
+      const openBrace = cleaned.indexOf("{");
+      if (openBrace >= 0) {
+        cleaned = cleaned.slice(openBrace) + '"}';
+      }
     }
 
-    try {
-      const parsed = JSON.parse(cleaned);
+    const tryParse = (json: string) => {
+      const parsed = JSON.parse(json);
       return {
         englishSummary: String(parsed.englishSummary ?? ""),
         summary: this.sanitizeKorean(String(parsed.summary ?? "")),
@@ -202,37 +209,40 @@ Respond with a JSON object ONLY (no markdown, no explanation):
           String(parsed.translatedTitle ?? ""),
         ),
       };
-    } catch {
-      const fixed = cleaned.replace(
-        /([{,]\s*"(?:englishSummary|summary|translatedTitle)"\s*:\s*")([\s\S]*?)("(?:\s*[,}]))/g,
-        (_match, prefix, value, suffix) => {
-          const escaped = value.replace(/(?<!\\)"/g, '\\"');
-          return prefix + escaped + suffix;
-        },
-      );
+    };
 
-      try {
-        const parsed = JSON.parse(fixed);
-        return {
-          englishSummary: String(parsed.englishSummary ?? ""),
-          summary: this.sanitizeKorean(String(parsed.summary ?? "")),
-          translatedTitle: this.sanitizeKorean(
-            String(parsed.translatedTitle ?? ""),
-          ),
-        };
-      } catch {
-        const extract = (key: string): string => {
-          const re = new RegExp(`"${key}"\\s*:\\s*"([\\s\\S]*?)(?:"\\s*[,}])`);
-          const m = cleaned.match(re);
-          return m ? m[1].replace(/\\"/g, '"') : "";
-        };
-        return {
-          englishSummary: extract("englishSummary"),
-          summary: this.sanitizeKorean(extract("summary")),
-          translatedTitle: this.sanitizeKorean(extract("translatedTitle")),
-        };
-      }
+    // 1차: 그대로 파싱
+    try {
+      return tryParse(cleaned);
+    } catch {
+      /* fall through */
     }
+
+    // 2차: 이스케이프 안 된 따옴표 수정
+    const fixed = cleaned.replace(
+      /([{,]\s*"(?:englishSummary|summary|translatedTitle)"\s*:\s*")([\s\S]*?)("(?:\s*[,}]))/g,
+      (_match, prefix, value, suffix) => {
+        const escaped = value.replace(/(?<!\\)"/g, '\\"');
+        return prefix + escaped + suffix;
+      },
+    );
+    try {
+      return tryParse(fixed);
+    } catch {
+      /* fall through */
+    }
+
+    // 3차: 정규식으로 개별 필드 추출 (잘린 응답에도 동작)
+    const extract = (key: string): string => {
+      const re = new RegExp(`"${key}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)`, "s");
+      const m = cleaned.match(re);
+      return m ? m[1].replace(/\\"/g, '"').replace(/\\n/g, " ") : "";
+    };
+    return {
+      englishSummary: extract("englishSummary"),
+      summary: this.sanitizeKorean(extract("summary")),
+      translatedTitle: this.sanitizeKorean(extract("translatedTitle")),
+    };
   }
 
   private fallback(article: CollectedArticle): SummarizedArticle {
